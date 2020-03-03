@@ -37,7 +37,7 @@ Currently, in Rajavithi Hospital from Thailand, the team have used influenza(ose
 
 In a paper by Taiwan as can be viewed [here](https://www.preprints.org/manuscript/202002.0242/v1/download), they discovered that indinavir has a better affinity with the Coronavirus than oseltamivir and lopinavir/ritonavir. The table can be seen here:
 ![Taiwan Research](https://github.com/darylfung96/drug-discovery-for-COVID-19/raw/master/image/taiwan%20research.png)
-obtained from: doi: 10.20944/preprints202002.0242.v1
+Table obtained from: doi: 10.20944/preprints202002.0242.v1
 
 
 The goal of this project is to determine existing drugs that have higher affinity to bind to the active site of Coronavirus or develop a deep learning agent that will be able to generate a diversity of drugs that have high affinity to the active site of Coronavirus. 
