@@ -3,3 +3,5 @@ data/drugs_cleansed
 .idea/
 *.smi
 *.pdbqt
+intersection.py
+__pycache__/
