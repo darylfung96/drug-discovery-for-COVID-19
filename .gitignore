@@ -1,4 +1,7 @@
 data/drugs_cleansed
+data/processed
+mnist_data/
+data/raw
 .DS_Store
 .idea/
 *.smi
@@ -7,3 +10,5 @@ intersection.py
 __pycache__/
 *.npy
 *.pkl
+ccc.py
+ddd.py

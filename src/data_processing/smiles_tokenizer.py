@@ -17,7 +17,7 @@ class SmilesProcessing:
         self.formatted_content = []
 
     def get_unique_tokens(self):
-        self.tokens = list(set(self.content.replace('\n', ''))) + ['0']  # '0' for end of string
+        self.tokens = ['0'] + list(set(self.content.replace('\n', '')))  # '0' for end of string
         self.tokens = np.array(self.tokens)
         self.tokens_dict = {token: index for index, token in enumerate(self.tokens)}
 
