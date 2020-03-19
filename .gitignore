@@ -5,3 +5,5 @@ data/drugs_cleansed
 *.pdbqt
 intersection.py
 __pycache__/
+*.npy
+*.pkl
