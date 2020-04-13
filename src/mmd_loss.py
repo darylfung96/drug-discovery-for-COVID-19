@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 def gaussian_kernel(a, b):
@@ -17,11 +18,9 @@ def MMD(a, b):
 
 
 def loss_function(prediction, ground_truth, latent):
-    criterion = nn.CrossEntropyLoss()
-    # criterion(prediction.view())
+    prediction = prediction.view(-1, 41)
 
-    # y_onehot = torch.FloatTensor(5120, 41).zero_().scatter(1, ground_truth.view(-1, 1), 1).long()
-    prediction = prediction.view(5120, 41)
+    reconstruction_loss = F.cross_entropy(prediction, ground_truth.view(-1))
+    mmd_loss = MMD(torch.randn([200, latent.shape[1]], requires_grad=False), latent)
 
-    return criterion(prediction, ground_truth.view(-1)) +\
-           MMD(torch.randn([200, latent.shape[1]], requires_grad=False), latent)
+    return reconstruction_loss, mmd_loss

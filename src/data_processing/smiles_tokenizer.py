@@ -20,6 +20,8 @@ class SmilesProcessing:
         self.tokens = ['0'] + list(set(self.content.replace('\n', '')))  # '0' for end of string
         self.tokens = np.array(self.tokens)
         self.tokens_dict = {token: index for index, token in enumerate(self.tokens)}
+        self.index_dict = {index: token for index, token in enumerate(self.tokens)}
+
 
     def convert_to_index(self):
         for line_content in self.line_content:
@@ -32,7 +34,8 @@ class SmilesProcessing:
 
     def save(self):
         with open(self.token_save_filename, 'wb') as f:
-            pickle.dump({'max_length': self.max_length, 'tokens_dict': self.tokens_dict}, f)
+            pickle.dump({'max_length': self.max_length, 'tokens_dict': self.tokens_dict, 'index_dict': self.index_dict},
+                        f)
         np.save(self.data_save_filename, self.padded_content)
 
     def process(self):
