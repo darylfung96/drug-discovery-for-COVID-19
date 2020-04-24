@@ -17,10 +17,10 @@ def MMD(a, b):
     return gaussian_kernel(a, a).mean() + gaussian_kernel(b, b).mean() - 2 * gaussian_kernel(a, b).mean()
 
 
-def loss_function(prediction, ground_truth, latent):
+def loss_function(prediction, ground_truth, latent, device):
     prediction = prediction.view(-1, 41)
 
     reconstruction_loss = F.cross_entropy(prediction, ground_truth.view(-1))
-    mmd_loss = MMD(torch.randn([200, latent.shape[1]], requires_grad=False), latent)
+    mmd_loss = MMD(torch.randn([200, latent.shape[1]], requires_grad=False).to(device), latent)
 
     return reconstruction_loss, mmd_loss

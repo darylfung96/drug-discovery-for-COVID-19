@@ -25,7 +25,7 @@ class VAETrainer(Trainer):
                 decoder_output, latent = self.mmd_vae(train_batch)
 
                 optimizer.zero_grad()
-                reconstruction_loss, mmd_loss = loss_function(decoder_output, train_batch, latent)
+                reconstruction_loss, mmd_loss = loss_function(decoder_output, train_batch, latent, self.device)
                 weighted_mmd_loss = mmd_loss
                 loss = reconstruction_loss + weighted_mmd_loss
                 loss.backward()
