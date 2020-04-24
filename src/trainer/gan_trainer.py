@@ -3,6 +3,7 @@ from torch.autograd import Variable
 from torch.optim import Adam
 
 from src.trainer.trainer import Trainer
+from src.models.mmd_vae import MMDVAE
 from src.models.gan_gp_att import Generator, Discriminator
 
 latent_size = 100
@@ -23,7 +24,7 @@ def weights_init_normal(m):
 
 
 def gradient_penalty(discrim, real_inputs, fake_inputs):
-    alpha = torch.randn((real_inputs.size(0), 1, 1)).to(device)
+    alpha = torch.randn((real_inputs.size(0), 1)).to(device)
     interpolates = ((alpha) * real_inputs + (1 - alpha) * fake_inputs).requires_grad_(True)
     d_interpolates = discrim(interpolates)
     target = Variable(torch.ones((real_inputs.size(0), 1)), requires_grad=False).to(device)
@@ -42,23 +43,26 @@ class GANTrainer(Trainer):
 
         generator_constructor, discriminator_constructor = model_type_dict[model_type]
         self.generator = generator_constructor(latent_size, self.vocab_size)
-        self.discriminator = discriminator_constructor(self.max_length, self.vocab_size)
+        self.discriminator = discriminator_constructor(latent_size)
 
         self.generator_optim = Adam(self.generator.parameters(), lr=0.0001, betas=[0.5, 0.999])
         self.discriminator_optim = Adam(self.discriminator.parameters(), lr=0.0004, betas=[0.5, 0.999])
 
+        self.mmd_vae = MMDVAE(data_info['max_length'], load_path='./models/model.ckpt').to(device)
+
     def run(self):
         for current_epoch in range(self.epoch):
             for idx, train_batch in enumerate(self.train_data_loader):
-                train_batch = torch.nn.functional.one_hot(train_batch, self.vocab_size).float()
-                latent = Variable(torch.randn((train_batch.shape[0], latent_size))).to(device)
+
+                real_output, train_latent = self.mmd_vae(train_batch)
 
                 # discriminator
                 self.discriminator_optim.zero_grad()
+                latent = torch.randn((train_latent.shape[0], latent_size))
                 g_ = self.generator(latent)  # [:, 1:, :]
                 d_fake = self.discriminator(g_)
-                d_real = self.discriminator(train_batch)
-                gp = gradient_penalty(self.discriminator, train_batch, g_.detach())
+                d_real = self.discriminator(train_latent)
+                gp = gradient_penalty(self.discriminator, train_latent, g_.detach())
                 discrim_loss = -torch.mean(d_real) + torch.mean(d_fake) + 10 * gp
                 discrim_loss.backward()
                 self.discriminator_optim.step()
@@ -74,6 +78,8 @@ class GANTrainer(Trainer):
 
                 print(f"epoch: {current_epoch}, batch:{idx}|{len(train_batch)} generator_loss: {generator_loss}, "
                       f"discriminator_loss: {discrim_loss}")
-                print(''.join([self.data_info['index_dict'][value] for value in g_.detach().numpy().argmax(2)[0]]))
-                print(''.join([self.data_info['index_dict'][value] for value in train_batch.numpy().argmax(2)[0]]))
+                generated_output = self.mmd_vae.sample(g_)
+                print(''.join([self.data_info['index_dict'][value] for value in generated_output.detach().numpy().argmax(2)[0]]))
+                print(''.join([self.data_info['index_dict'][value] for value in real_output.detach().numpy().argmax(2)[0]]))
+                print(''.join([self.data_info['index_dict'][value] for value in train_batch.detach().numpy()[0]]))
         print(g_)

@@ -22,7 +22,6 @@ class SmilesProcessing:
         self.tokens_dict = {token: index for index, token in enumerate(self.tokens)}
         self.index_dict = {index: token for index, token in enumerate(self.tokens)}
 
-
     def convert_to_index(self):
         for line_content in self.line_content:
             self.formatted_content.append([self.tokens_dict[letter] for letter in list(line_content)])

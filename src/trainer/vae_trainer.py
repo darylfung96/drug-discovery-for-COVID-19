@@ -26,7 +26,7 @@ class VAETrainer(Trainer):
 
                 optimizer.zero_grad()
                 reconstruction_loss, mmd_loss = loss_function(decoder_output, train_batch, latent)
-                weighted_mmd_loss = 500 * mmd_loss
+                weighted_mmd_loss = mmd_loss
                 loss = reconstruction_loss + weighted_mmd_loss
                 loss.backward()
                 optimizer.step()
@@ -69,7 +69,9 @@ class VAETrainer(Trainer):
         # show real data
         print('real data')
         numpy_train_batch = train_batch.numpy()
+        generated_smiles = []
         for i in range(numpy_train_batch.shape[0]):
             value = [self.data_info['index_dict'][idx] for idx in numpy_train_batch[i]]
+            generated_smiles.append(''.join(value))
         print(generated_smiles)
 

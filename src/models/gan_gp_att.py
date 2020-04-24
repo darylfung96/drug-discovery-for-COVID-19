@@ -16,7 +16,6 @@ import os
 
 """
 
-X_SIZE = 784
 device = 'cpu:0'
 
 
@@ -27,13 +26,13 @@ class Generator(nn.Module):
 
         self.pre_model = nn.Sequential(nn.Linear(z_dim, 64),
                                        nn.LeakyReLU(0.2, inplace=True),
-                                       nn.Linear(64, 64 * 8 * 8)
+                                       nn.Linear(64, 32 * 8 * 8)
                                        )
 
         self.model = nn.Sequential(
-            nn.BatchNorm2d(64),
+            nn.BatchNorm2d(32),
             nn.Upsample(scale_factor=2),
-            nn.Conv2d(64, 64, 5, stride=1, padding=1),
+            nn.Conv2d(32, 64, 5, stride=1, padding=1),
             nn.BatchNorm2d(64, 0.8),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(64, 128, 5, stride=1, padding=1),
@@ -45,11 +44,11 @@ class Generator(nn.Module):
             nn.Conv2d(128, 64, 5, stride=1, padding=1),
             nn.BatchNorm2d(64, 0.8),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(64, 64, 5, stride=1, padding=1),
-            nn.BatchNorm2d(64, 0.8),
+            nn.Conv2d(64, 32, 5, stride=1, padding=1),
+            nn.BatchNorm2d(32, 0.8),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(64, 205, 5, stride=1, padding=1),
-            nn.BatchNorm2d(205, 0.8),
+            nn.Conv2d(32, 22, 5, stride=1, padding=1),
+            nn.BatchNorm2d(22, 0.8),
             nn.LeakyReLU(0.2, inplace=True),
         )
 
@@ -58,9 +57,9 @@ class Generator(nn.Module):
 
     def forward(self, x):
         z = self.pre_model(x)
-        post_z = z.view(x.shape[0], 64, 8, 8)
+        post_z = z.view(x.shape[0], 32, 8, 8)
         conv_z = self.model(post_z)
-        return conv_z.view(x.shape[0], -1, self.vocab_size)
+        return conv_z.view(x.shape[0], -1)
         # latent_input = conv_z.view(x.shape[0], -1)
         # gru_input = torch.zeros((x.shape[0], self.vocab_size)).to(device)
         # hidden = self.initialize_hidden_state(x)
@@ -83,31 +82,31 @@ class Generator(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self, max_length, vocab_size):
+    def __init__(self, input_size):
         super(Discriminator, self).__init__()
 
         def block(inputs, outputs, bn=True):
-            c_block = [nn.Conv2d(inputs, outputs, 3, 2, 1), nn.LeakyReLU(0.2, inplace=True), nn.Dropout2d(0.25)]
+            # padding = kernel // 2
+            c_block = [nn.Conv2d(inputs, outputs, 3, 2, padding=3//2), nn.LeakyReLU(0.2, inplace=True), nn.Dropout2d(0.25)]
             if bn:
                 c_block.append(nn.BatchNorm2d(outputs, 0.8))
             return c_block
 
-
         self.model = nn.Sequential(
-            *block(1, 16, bn=False),
+            *block(22, 16, bn=False),
             *block(16, 32, bn=False),
             *block(32, 64, bn=False),
             *block(64, 64, bn=False),
-            *block(64, 32, bn=False)
+            *block(64, 1, bn=False)
         )
 
-        self.last_layer = nn.Sequential(nn.Linear(192, 1))
+        # self.last_layer = nn.Sequential(nn.Linear(192, 1))
 
     def forward(self, x):
-        x = x.unsqueeze(1)
+        x = x.view(x.shape[0], 22, 4, 4)
         output = self.model(x)
         output = output.view(x.shape[0], -1)
-        output = self.last_layer(output)
+        # output = self.last_layer(output)
         return output
 
 

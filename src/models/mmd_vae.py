@@ -16,23 +16,23 @@ class MMDVAE(nn.Module):
         self.encoder = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=(3, 128)),
             nn.LeakyReLU(),
-            nn.Conv2d(32, 64, kernel_size=(5, 1)),
+            nn.Conv2d(32, 64, kernel_size=(3, 1)),
             nn.LeakyReLU(),
             nn.Conv2d(64, 64, kernel_size=(5, 1)),
             nn.LeakyReLU(),
-            nn.Conv2d(64, 128, kernel_size=(7, 1)),
+            nn.Conv2d(64, 128, kernel_size=(5, 1)),
             nn.LeakyReLU(),
             nn.Conv2d(128, 64, kernel_size=(7, 1)),
             nn.LeakyReLU(),
-            nn.Conv2d(64, 32, kernel_size=(5, 1)),
+            nn.Conv2d(64, 32, kernel_size=(7, 1)),
             nn.LeakyReLU(),
-            nn.Conv2d(32, 16, kernel_size=(5, 1)),
+            nn.Conv2d(32, 16, kernel_size=(7, 1)),
             nn.LeakyReLU(),
-            nn.Conv2d(16, 16, kernel_size=(3, 1)),
+            nn.Conv2d(16, 16, kernel_size=(7, 1)),
             nn.LeakyReLU(),
-            nn.Conv2d(16, 8, kernel_size=(3, 1)),
+            nn.Conv2d(16, 8, kernel_size=(7, 1)),
             nn.LeakyReLU(),
-            nn.Conv2d(8, 8, kernel_size=(3, 1))
+            nn.Conv2d(8, 8, kernel_size=(7, 1))
         )
 
         self.decoder = nn.Sequential(
@@ -40,12 +40,10 @@ class MMDVAE(nn.Module):
             nn.ReLU(),
             nn.ConvTranspose2d(16, 32, (3, 1)),
             nn.ReLU(),
-            nn.ConvTranspose2d(32, 64, (5, 1)),
+            nn.ConvTranspose2d(32, 64, (3, 1)),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 80, (4, 1))
         )
-
-        self.gru = nn.GRU(3328, 256, 1, batch_first=True)
-        self.final_layer = nn.Linear(256, 41)
-
 
         if os.path.isfile(load_path):
             with open(load_path, 'r') as f:
@@ -61,16 +59,16 @@ class MMDVAE(nn.Module):
 
     def forward_decoder(self, encoder_output):
         latent = encoder_output.view(encoder_output.shape[0], -1)
-        decoder_output = self.decoder(encoder_output)
+        final_output = self.decoder(encoder_output)
         # decoder_output = F.softmax(decoder_output, dim=2)
-        decoder_output = decoder_output.view(encoder_output.shape[0], 1, -1)
-        decoder_output = decoder_output.repeat(1, 80, 1)  # batch_size, max_length, num_chars
-        out, hidden = self.gru(decoder_output)
-        final_output = self.final_layer(out)
+        # decoder_output = decoder_output.view(encoder_output.shape[0], 1, -1)
+        # decoder_output = decoder_output.repeat(1, 80, 1)  # batch_size, max_length, num_chars
+        # out, hidden = self.gru(decoder_output)
+        # final_output = self.final_layer(out)
         return final_output, latent
 
     def sample(self, latent=None):
-        latent = latent if latent is not None else torch.randn(1, 352)
-        latent = latent.view(-1, 8, 44, 1)
+        latent = latent if latent is not None else torch.randn(1, 256)
+        latent = latent.view(-1, 8, 32, 1)
         decoder_output = F.softmax(self.forward_decoder(latent)[0].view(-1, 41), 1)
         return decoder_output.view(-1, 80, 41)
