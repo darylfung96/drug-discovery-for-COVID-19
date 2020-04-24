@@ -1,6 +1,9 @@
 import numpy as np
 import pickle
 from torch.utils.data import DataLoader
+import sys
+
+sys.path.insert(0, 'src')
 
 from src.data_processing.dataset import SmilesDataset
 from src.trainer.vae_trainer import VAETrainer
