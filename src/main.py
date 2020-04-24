@@ -10,7 +10,7 @@ batch_size = 64
 epoch = 200
 verbose_per_step = 2
 save_per_step = 100
-device = 'cpu'
+device = 'cuda'
 type = 'mmd'
 
 trainer_dict = {
