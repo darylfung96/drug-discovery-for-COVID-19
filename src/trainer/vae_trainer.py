@@ -1,5 +1,6 @@
 import torch
 from torch.optim import Adam
+from torch.utils.tensorboard import SummaryWriter
 
 from src.trainer.trainer import Trainer
 from src.mmd_loss import loss_function
@@ -15,9 +16,13 @@ class VAETrainer(Trainer):
     def __init__(self, data_info, model_type, epoch, train_data_loader, test_data_loader, verbose_per_step, save_per_step, device):
         super(VAETrainer, self).__init__(data_info, epoch, train_data_loader, test_data_loader, verbose_per_step, save_per_step, device)
         self.mmd_vae = model_type_dict[model_type](num_inputs=data_info['max_length'], load_path='./models/model.ckpt').to(device)
+        self.writer = SummaryWriter('runs/experiment')
+        self.writer.add_graph(self.mmd_vae)
 
     def run(self):
         optimizer = Adam(self.mmd_vae.parameters(), lr=0.0005)
+        running_loss = 0
+        running_index = 0
 
         for current_epoch in range(self.epoch):
             for idx, train_batch in enumerate(self.train_data_loader):
@@ -30,6 +35,12 @@ class VAETrainer(Trainer):
                 loss = reconstruction_loss + weighted_mmd_loss
                 loss.backward()
                 optimizer.step()
+
+                running_loss += loss.item()
+                running_index += 1
+
+                if running_index % 1000 == 0:
+                    self.writer.add_scalar('training_loss', running_loss / 1000, running_index)
 
                 if idx % self.verbose_per_step == 0:
                     print(

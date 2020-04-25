@@ -10,7 +10,7 @@ from src.trainer.vae_trainer import VAETrainer
 from src.trainer.gan_trainer import GANTrainer
 
 batch_size = 64
-epoch = 1
+epoch = 200
 verbose_per_step = 2
 save_per_step = 100
 device = 'cuda'
