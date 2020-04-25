@@ -49,7 +49,7 @@ class VAETrainer(Trainer):
         #  sample generation
         print("generating with random latents")
         output = self.mmd_vae.sample()
-        generated_smiles_indexes = torch.argmax(output, 2).numpy()
+        generated_smiles_indexes = torch.argmax(output, 2).detach().numpy()
         generated_smiles = []
         for i in range(len(generated_smiles_indexes)):
             value = [self.data_info['index_dict'][idx] for idx in generated_smiles_indexes[i]]
@@ -59,7 +59,7 @@ class VAETrainer(Trainer):
         # sample existing latent generation
         print('generating with existing latents')
         output = self.mmd_vae.sample(latent)
-        generated_smiles_indexes = torch.argmax(output, 2).numpy()
+        generated_smiles_indexes = torch.argmax(output, 2).detach().numpy()
         generated_smiles = []
         for i in range(len(generated_smiles_indexes)):
             value = [self.data_info['index_dict'][idx] for idx in generated_smiles_indexes[i]]
