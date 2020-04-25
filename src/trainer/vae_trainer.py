@@ -17,7 +17,7 @@ class VAETrainer(Trainer):
         super(VAETrainer, self).__init__(data_info, epoch, train_data_loader, test_data_loader, verbose_per_step, save_per_step, device)
         self.mmd_vae = model_type_dict[model_type](num_inputs=data_info['max_length'], load_path='./models/model.ckpt').to(device)
         self.writer = SummaryWriter('runs/experiment')
-        self.writer.add_graph(self.mmd_vae)
+        self.writer.add_graph(self.mmd_vae, list(self.train_data_loader)[:1])
 
     def run(self):
         optimizer = Adam(self.mmd_vae.parameters(), lr=0.0005)
