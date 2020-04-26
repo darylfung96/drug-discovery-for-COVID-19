@@ -68,7 +68,7 @@ class MMDVAE(nn.Module):
         return final_output, latent
 
     def sample(self, latent=None):
-        latent = latent if latent is not None else torch.randn(1, 256)
+        latent = latent if latent is not None else torch.randn(1, 256).to(self.device)
         latent = latent.view(-1, 8, 32, 1)
         decoder_output = F.softmax(self.forward_decoder(latent)[0].view(-1, 41), 1)
         return decoder_output.view(-1, 80, 41)

@@ -41,6 +41,7 @@ class VAETrainer(Trainer):
 
                 if running_index % 1000 == 0:
                     self.writer.add_scalar('training_loss', running_loss / 1000, running_index)
+                    running_loss = 0
 
                 if idx % self.verbose_per_step == 0:
                     print(
