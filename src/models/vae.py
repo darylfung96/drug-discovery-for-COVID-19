@@ -81,7 +81,8 @@ class VAE(nn.Module):
         return final_output
 
     def calculate_loss(self, prediction, ground_truth, latent):
-        ground_truth_one_hot = torch.nn.functional.one_hot(ground_truth, self.num_inputs).detach().type(torch.FloatTensor)
+        ground_truth_one_hot = torch.nn.functional.one_hot(ground_truth, self.num_inputs).detach().\
+            type(torch.FloatTensor).to(self.device)
         prediction = F.log_softmax(prediction, dim=2)
         # reconstruction_loss = self.criterion(prediction, ground_truth_one_hot)
         reconstruction_loss = -torch.sum(ground_truth_one_hot * prediction)
