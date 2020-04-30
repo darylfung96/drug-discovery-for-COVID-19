@@ -3,36 +3,39 @@ from torch.optim import Adam
 from torch.utils.tensorboard import SummaryWriter
 
 from src.trainer.trainer import Trainer
-from src.mmd_loss import loss_function
 from src.models.mmd_vae import MMDVAE
+from src.models.vae import VAE
 
 
 model_type_dict = {
-    'mmd': MMDVAE
+    'mmd': MMDVAE,
+    'vae': VAE
 }
 
 
 class VAETrainer(Trainer):
     def __init__(self, data_info, model_type, epoch, train_data_loader, test_data_loader, verbose_per_step, save_per_step, device):
         super(VAETrainer, self).__init__(data_info, epoch, train_data_loader, test_data_loader, verbose_per_step, save_per_step, device)
-        self.mmd_vae = model_type_dict[model_type](num_inputs=data_info['max_length'], load_path='./models/model.ckpt').to(device)
+        self.vae = model_type_dict[model_type](num_inputs=len(data_info['tokens_dict']), max_length=data_info['max_length'],
+                                                   device=device, load_path='./models/model.ckpt').to(device)
         self.writer = SummaryWriter('runs/experiment')
-        self.writer.add_graph(self.mmd_vae, list(self.train_data_loader)[0].to(self.device))
+        # self.writer.add_graph(self.vae, list(self.train_data_loader)[0].to(self.device))
 
     def run(self):
-        optimizer = Adam(self.mmd_vae.parameters(), lr=0.0005)
+        optimizer = Adam(self.vae.parameters(), lr=0.0005)
         running_loss = 0
         running_index = 0
+        self.vae.train()
 
         for current_epoch in range(self.epoch):
             for idx, train_batch in enumerate(self.train_data_loader):
                 train_batch = train_batch.to(self.device)
-                decoder_output, latent = self.mmd_vae(train_batch)
+                decoder_output, latent = self.vae(train_batch)
 
                 optimizer.zero_grad()
-                reconstruction_loss, mmd_loss = loss_function(decoder_output, train_batch, latent, self.device)
-                weighted_mmd_loss = mmd_loss
-                loss = reconstruction_loss + weighted_mmd_loss
+                reconstruction_loss, latent_loss = self.vae.calculate_loss(decoder_output, train_batch, latent)
+                weighted_latent_loss = latent_loss
+                loss = reconstruction_loss + weighted_latent_loss
                 loss.backward()
                 optimizer.step()
 
@@ -45,10 +48,10 @@ class VAETrainer(Trainer):
 
                 if idx % self.verbose_per_step == 0:
                     print(
-                        f'epoch: {current_epoch} reconstruction loss: {reconstruction_loss} mmd loss: {weighted_mmd_loss}')
+                        f'epoch: {current_epoch} reconstruction loss: {reconstruction_loss} latent loss: {weighted_latent_loss}')
 
                 if idx % self.save_per_step == 0:
-                    torch.save(self.mmd_vae.state_dict(), './models/model.ckpt')
+                    torch.save(self.vae.state_dict(), './models/model.ckpt')
 
             # for idx, test_batch in enumerate(test_data_loader):
             #     test_batch = test_batch.to(device)
@@ -58,9 +61,10 @@ class VAETrainer(Trainer):
             #     if idx % verbose_per_step == 0:
             #         print(f'testing recons loss: {reconstruction_loss} testing mmd loss: {mmd_loss}')
 
+        self.vae.eval()
         #  sample generation
         print("generating with random latents")
-        output = self.mmd_vae.sample()
+        output = self.vae.sample()
         generated_smiles_indexes = torch.argmax(output, 2).detach().numpy()
         generated_smiles = []
         for i in range(len(generated_smiles_indexes)):
@@ -70,7 +74,7 @@ class VAETrainer(Trainer):
 
         # sample existing latent generation
         print('generating with existing latents')
-        output = self.mmd_vae.sample(latent)
+        output = self.vae.sample(latent)
         generated_smiles_indexes = torch.argmax(output, 2).detach().numpy()
         generated_smiles = []
         for i in range(len(generated_smiles_indexes)):
