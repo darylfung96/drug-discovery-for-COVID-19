@@ -13,7 +13,7 @@ batch_size = 64
 epoch = 1000
 verbose_per_step = 2
 save_per_step = 100
-device = 'cpu'
+device = 'cuda'
 type = 'vae'
 
 trainer_dict = {
