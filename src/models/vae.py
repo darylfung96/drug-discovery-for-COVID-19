@@ -49,7 +49,7 @@ class VAE(nn.Module):
 
         if os.path.isfile(load_path):
             with open(load_path, 'r') as f:
-                self.load_state_dict(torch.load(load_path, map_location=torch.device('cpu')))
+                self.load_state_dict(torch.load(load_path, map_location=torch.device(self.device)))
 
     def forward(self, inputs):
         output = self.embedding(inputs)
