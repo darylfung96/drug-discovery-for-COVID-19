@@ -9,11 +9,11 @@ from src.data_processing.dataset import SmilesDataset
 from src.trainer.vae_trainer import VAETrainer
 from src.trainer.gan_trainer import GANTrainer
 
-batch_size = 64
-epoch = 1000
+batch_size = 2
+epoch = 1
 verbose_per_step = 2
 save_per_step = 100
-device = 'cuda'
+device = 'cpu'
 type = 'vae'
 
 trainer_dict = {
@@ -26,8 +26,8 @@ if __name__ == '__main__':
     processed_data = np.load('./data_processing/processed_data.npy').astype(np.long)
     with open('./data_processing/tokens.pkl', 'rb') as f:
         data_info = pickle.load(f)
-    train_smiles_dataset = SmilesDataset(processed_data[:10000])
-    test_smiles_dataset = SmilesDataset(processed_data[10000:20000])
+    train_smiles_dataset = SmilesDataset(processed_data[:2])
+    test_smiles_dataset = SmilesDataset(processed_data[2:20000])
     train_data_loader = DataLoader(train_smiles_dataset, batch_size=batch_size, shuffle=False, drop_last=False)
     test_data_loader = DataLoader(test_smiles_dataset, batch_size=batch_size, shuffle=False, drop_last=False)
 
