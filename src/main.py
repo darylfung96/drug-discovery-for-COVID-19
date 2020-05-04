@@ -9,10 +9,10 @@ from src.data_processing.dataset import SmilesDataset
 from src.trainer.vae_trainer import VAETrainer
 from src.trainer.gan_trainer import GANTrainer
 
-batch_size = 64
+batch_size = 256
 epoch = 1000
-verbose_per_step = 100
-save_per_step = 100
+verbose_per_step = 25
+save_per_step = 25
 device = 'cuda'
 type = 'vae'
 
