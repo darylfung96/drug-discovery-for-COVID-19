@@ -25,6 +25,7 @@ class VAETrainer(Trainer):
         optimizer = Adam(self.vae.parameters(), lr=0.0005)
         running_loss = 0
         running_index = 0
+        best_reconstruction_loss = float('inf')
         self.vae.train()
 
         for current_epoch in range(self.epoch):
@@ -46,11 +47,12 @@ class VAETrainer(Trainer):
                     self.writer.add_scalar('training_loss', running_loss / 1000, running_index)
                     running_loss = 0
 
-                if idx % self.verbose_per_step == 0:
+                if idx % self.verbose_per_step == 0 and reconstruction_loss < best_reconstruction_loss:
                     print(
-                        f'epoch: {current_epoch} reconstruction loss: {reconstruction_loss} latent loss: {weighted_latent_loss}')
+                        f'epoch: {current_epoch} reconstruction loss: {reconstruction_loss} '
+                        f'latent loss: {weighted_latent_loss}')
 
-                if idx % self.save_per_step == 0:
+                if idx % self.save_per_step == 0 and reconstruction_loss:
                     torch.save(self.vae.state_dict(), './models/model.ckpt')
 
             # for idx, test_batch in enumerate(test_data_loader):

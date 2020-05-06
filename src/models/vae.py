@@ -91,5 +91,5 @@ class VAE(nn.Module):
 
     def sample(self, latent=None):
         latent = latent if latent is not None else torch.randn(1, 256).to(self.device)
-        decoder_output = F.softmax(self.forward_decoder(latent)[0].view(-1, self.num_inputs), 1)
-        return decoder_output.view(-1, self.max_length, self.num_inputs)
+        decoder_output = F.softmax(self.forward_decoder(latent), -1)
+        return decoder_output
