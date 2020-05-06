@@ -86,7 +86,7 @@ class VAETrainer(Trainer):
 
         # show real data
         print('real data')
-        numpy_train_batch = train_batch.numpy()
+        numpy_train_batch = train_batch.cpu().detach().numpy()
         generated_smiles = []
         for i in range(numpy_train_batch.shape[0]):
             value = [self.data_info['index_dict'][idx] for idx in numpy_train_batch[i]]
