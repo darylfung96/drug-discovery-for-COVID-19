@@ -48,8 +48,8 @@ class VAE(nn.Module):
         self.criterion = nn.NLLLoss()
 
         if os.path.isfile(load_path):
-            with open(load_path, 'r') as f:
-                self.load_state_dict(torch.load(load_path, map_location=torch.device(self.device)))
+            self.load_state_dict(torch.load(load_path, map_location=torch.device(self.device)))
+            print('loaded model')
 
     def forward(self, inputs):
         output = self.embedding(inputs)
