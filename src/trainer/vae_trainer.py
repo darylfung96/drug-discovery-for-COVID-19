@@ -1,6 +1,7 @@
 import torch
 from torch.optim import Adam
 from torch.utils.tensorboard import SummaryWriter
+import os
 
 from src.trainer.trainer import Trainer
 from src.models.mmd_vae import MMDVAE
@@ -27,6 +28,7 @@ class VAETrainer(Trainer):
         running_index = 0
         best_reconstruction_loss = float('inf')
         self.vae.train()
+        current_model_name = ''
 
         for current_epoch in range(self.epoch):
             for idx, train_batch in enumerate(self.train_data_loader):
@@ -53,7 +55,9 @@ class VAETrainer(Trainer):
                         f'latent loss: {weighted_latent_loss}')
 
                 if idx % self.save_per_step == 0 and reconstruction_loss:
-                    torch.save(self.vae.state_dict(), f'./models/model_{current_epoch}.ckpt')
+                    os.remove(current_model_name)
+                    current_model_name = f'./models/model_{current_epoch}.ckpt'
+                    torch.save(self.vae.state_dict(), current_model_name)
 
             # for idx, test_batch in enumerate(test_data_loader):
             #     test_batch = test_batch.to(device)
