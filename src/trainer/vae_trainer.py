@@ -55,7 +55,9 @@ class VAETrainer(Trainer):
                         f'latent loss: {weighted_latent_loss}')
 
                 if idx % self.save_per_step == 0 and reconstruction_loss:
-                    os.remove(current_model_name)
+
+                    if os.path.isfile(current_model_name):
+                        os.remove(current_model_name)
                     current_model_name = f'./models/model_{current_epoch}.ckpt'
                     torch.save(self.vae.state_dict(), current_model_name)
 
