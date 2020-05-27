@@ -29,6 +29,7 @@ class VAETrainer(Trainer):
         best_reconstruction_loss = float('inf')
         self.vae.train()
         current_model_name = ''
+        best_model_name = f'./models/model_best.ckpt'
 
         for current_epoch in range(self.epoch):
             for idx, train_batch in enumerate(self.train_data_loader):
@@ -60,6 +61,9 @@ class VAETrainer(Trainer):
                         os.remove(current_model_name)
                     current_model_name = f'./models/model_{current_epoch}.ckpt'
                     torch.save(self.vae.state_dict(), current_model_name)
+
+                    if reconstruction_loss < best_reconstruction_loss:
+                        torch.save(self.vae.state_dict(), best_model_name)
 
             # for idx, test_batch in enumerate(test_data_loader):
             #     test_batch = test_batch.to(device)
